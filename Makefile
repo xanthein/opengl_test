@@ -2,7 +2,7 @@ target   := gl_test
 sources  := video.c
 CFLAGS   := -pthread -Wall -O2 -g -I$(SDKTARGETSYSROOT)/usr/include -I$(SDKTARGETSYSROOT)/usr/include/drm -pg
 LFLAGS   := -pg
-LIBS     := -pthread -ldl -lEGL -lGLESv2 -lgbm -ldrm -lasound -L$(SDKTARGETSYSROOT)/usr/lib
+LIBS     := -pthread -ldl -lEGL -lGLESv2 -lgbm -ldrm -lasound -L$(SDKTARGETSYSROOT)/usr/lib -lglfw
 packages := sdl2, libpng
 
 # do not edit from here onwards

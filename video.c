@@ -9,12 +9,16 @@
 
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
+#if USE_DRM
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 #include <gbm.h>
 #include <libdrm/drm.h>
 #include <xf86drmMode.h>
 #include <xf86drm.h>
+#else
+#include <GLFW/glfw3.h>
+#endif
 #include <png.h>
 
 #define GL_CHECK(x) \
@@ -30,12 +34,15 @@ extern bool pausing;
 
 #define EGL_PLATFORM_GBM_KHR 0x31D7
 
+GLFWwindow* g_window;
+
 struct gbm_device *g_gbm_dev = NULL;
 struct gbm_surface *g_gbm_surface  = NULL;
 struct gbm_bo *g_bo = NULL;
 struct gbm_bo *g_next_bo = NULL;
 unsigned int bo_fb_id;
 unsigned int next_bo_fb_id;
+#if	0 
 int g_drm_fd;
 int g_crtc_id;
 int g_prev_crtc_id;
@@ -51,10 +58,12 @@ EGLDisplay g_display;
 EGLConfig g_config;
 EGLContext g_context;
 EGLSurface g_surface;
+#endif
 
 GLuint g_FBO[2] = {0,0};
 GLuint g_FBOTex[2] = {0,0};
 
+#if USE_DRM
 EGLint configAttributes[] =
 {
 	EGL_SAMPLES,             4,
@@ -82,6 +91,7 @@ EGLint windowAttributes[] =
 {
 	EGL_NONE
 };
+#endif
 
 GLuint g_width;
 GLuint g_height;
@@ -213,6 +223,7 @@ void process_png_file() {
   }
 }
 
+#if USE_DRM
 unsigned int get_drm_fb(struct gbm_bo *bo)
 {
 	int ret;
@@ -461,7 +472,22 @@ error:
 
 	return 1;
 }
+#else
+int initVideo()
+{
+    glfwInit();
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    g_window = glfwCreateWindow(1280, 720, __FILE__, NULL, NULL);
+    glfwMakeContextCurrent(g_window);
 
+    printf("GL_VERSION  : %s\n", glGetString(GL_VERSION) );
+    printf("GL_RENDERER : %s\n", glGetString(GL_RENDERER) );
+}
+#endif
+
+#if USE_DRM
 void page_flip_handler
 (int fd, unsigned int frame,
  unsigned int sec, unsigned int usec,
@@ -521,9 +547,11 @@ bool wait_flip(bool block)
 
 	return false;
 }
+#endif
 
 void swapBuffers()
 {
+#if USE_DRM
 	EGLint err;
 
 	if(eglSwapBuffers(g_display, g_surface) != EGL_TRUE) {
@@ -554,7 +582,10 @@ void swapBuffers()
 	}
 
 	wait_flip(true);
+#else
+	glfwSwapBuffers(g_window);
 }
+#endif
 
 int initGL()
 {
@@ -589,7 +620,7 @@ int initGL()
 	    GL_CHECK(glBindTexture(GL_TEXTURE_2D, 0));
 		
 		glViewport(160, 0, 960, 720);
-		printf("%s %d - %d %d %d %d\n", __FUNCTION__, __LINE__, g_drm_mode->hdisplay, g_drm_mode->vdisplay, g_width, g_height);
+		//printf("%s %d - %d %d %d %d\n", __FUNCTION__, __LINE__, g_drm_mode->hdisplay, g_drm_mode->vdisplay, g_width, g_height);
 	}
 	 
     return true;
