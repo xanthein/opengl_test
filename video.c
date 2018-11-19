@@ -9,7 +9,7 @@
 
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
-#if USE_DRM
+#ifdef USE_DRM
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 #include <gbm.h>
@@ -34,15 +34,13 @@ extern bool pausing;
 
 #define EGL_PLATFORM_GBM_KHR 0x31D7
 
-GLFWwindow* g_window;
-
 struct gbm_device *g_gbm_dev = NULL;
 struct gbm_surface *g_gbm_surface  = NULL;
 struct gbm_bo *g_bo = NULL;
 struct gbm_bo *g_next_bo = NULL;
 unsigned int bo_fb_id;
 unsigned int next_bo_fb_id;
-#if	0 
+#ifdef USE_DRM
 int g_drm_fd;
 int g_crtc_id;
 int g_prev_crtc_id;
@@ -58,12 +56,14 @@ EGLDisplay g_display;
 EGLConfig g_config;
 EGLContext g_context;
 EGLSurface g_surface;
+#else
+GLFWwindow* g_window;
 #endif
 
 GLuint g_FBO[2] = {0,0};
 GLuint g_FBOTex[2] = {0,0};
 
-#if USE_DRM
+#ifdef USE_DRM
 EGLint configAttributes[] =
 {
 	EGL_SAMPLES,             4,
@@ -223,7 +223,7 @@ void process_png_file() {
   }
 }
 
-#if USE_DRM
+#ifdef USE_DRM
 unsigned int get_drm_fb(struct gbm_bo *bo)
 {
 	int ret;
@@ -487,7 +487,7 @@ int initVideo()
 }
 #endif
 
-#if USE_DRM
+#ifdef USE_DRM
 void page_flip_handler
 (int fd, unsigned int frame,
  unsigned int sec, unsigned int usec,
@@ -551,7 +551,7 @@ bool wait_flip(bool block)
 
 void swapBuffers()
 {
-#if USE_DRM
+#ifdef USE_DRM
 	EGLint err;
 
 	if(eglSwapBuffers(g_display, g_surface) != EGL_TRUE) {
@@ -584,8 +584,8 @@ void swapBuffers()
 	wait_flip(true);
 #else
 	glfwSwapBuffers(g_window);
-}
 #endif
+}
 
 int initGL()
 {

@@ -5,6 +5,10 @@ LFLAGS   := -pg
 LIBS     := -pthread -ldl -lEGL -lGLESv2 -lgbm -ldrm -lasound -L$(SDKTARGETSYSROOT)/usr/lib -lglfw
 packages := sdl2, libpng
 
+ifeq ($(USE_DRM), 1)
+   CFLAGS += -DUSE_DRM=1 
+endif
+
 # do not edit from here onwards
 objects := $(addprefix build/,$(sources:.c=.o))
 ifneq ($(packages),)
