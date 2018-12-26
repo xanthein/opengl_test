@@ -2,11 +2,13 @@ target   := gl_test
 sources  := main.c video.c
 CFLAGS   := -pthread -Wall -O2 -g -I$(SDKTARGETSYSROOT)/usr/include -I$(SDKTARGETSYSROOT)/usr/include/drm -pg
 LFLAGS   := -pg
-LIBS     := -pthread -ldl -lEGL -lGLESv2 -lgbm -ldrm -lasound -L$(SDKTARGETSYSROOT)/usr/lib -lglfw
+LIBS     := -pthread -ldl -lEGL -lGLESv2 -lgbm -ldrm -lasound -L$(SDKTARGETSYSROOT)/usr/lib
 packages := sdl2, libpng
 
 ifeq ($(USE_DRM), 1)
-   CFLAGS += -DUSE_DRM=1 
+   CFLAGS += -DUSE_DRM=1
+else
+   LIBS += -lglfw
 endif
 
 # do not edit from here onwards
