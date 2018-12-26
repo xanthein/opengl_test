@@ -44,7 +44,7 @@ unsigned int next_bo_fb_id;
 int g_drm_fd;
 int g_crtc_id;
 int g_prev_crtc_id;
-int g_connector_id;
+uint32_t g_connector_id;
 struct pollfd g_drm_fds;
 drmModeConnector *g_drm_connector     = NULL;
 drmModeModeInfo *g_drm_mode = NULL;
@@ -226,7 +226,6 @@ void process_png_file() {
 #ifdef USE_DRM
 unsigned int get_drm_fb(struct gbm_bo *bo)
 {
-	int ret;
 	unsigned width, height, stride, handle;
 	unsigned int id;
 
@@ -475,15 +474,15 @@ error:
 #else
 int initVideo()
 {
-    glfwInit();
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    g_window = glfwCreateWindow(1280, 720, __FILE__, NULL, NULL);
-    glfwMakeContextCurrent(g_window);
-
-    printf("GL_VERSION  : %s\n", glGetString(GL_VERSION) );
-    printf("GL_RENDERER : %s\n", glGetString(GL_RENDERER) );
+	glfwInit();
+	glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+	g_window = glfwCreateWindow(1280, 720, __FILE__, NULL, NULL);
+	glfwMakeContextCurrent(g_window);
+	glfwPollEvents();
+	printf("GL_VERSION  : %s\n", glGetString(GL_VERSION) );
+	printf("GL_RENDERER : %s\n", glGetString(GL_RENDERER) );
 }
 #endif
 
@@ -524,7 +523,6 @@ bool drm_wait_flip(int timeout)
 }
 bool wait_flip(bool block)
 {
-	int poll_state;
 	int timeout = 0;
 
 	if (!waiting_for_flip)
@@ -584,6 +582,7 @@ void swapBuffers()
 	wait_flip(true);
 #else
 	glfwSwapBuffers(g_window);
+	glfwPollEvents();
 #endif
 }
 
@@ -743,4 +742,13 @@ int setupGraphics(int width, int height)
 	init_vertex_data();
 
 	return 0;
+}
+
+int closeWindow()
+{
+#ifdef USE_DRM
+	return 0;
+#else
+	return glfwWindowShouldClose(g_window);
+#endif
 }
